@@ -1,6 +1,6 @@
 [project]
 name = "mcp-codemode-py"
-version = "0.1.0"
+version = "0.2.0"
 description = "Lightweight library for calling MCP tools with minimal context overhead"
 readme = "README.md"
 requires-python = ">=3.13"
@@ -8,6 +8,10 @@ dependencies = [
     "httpx>=0.28.1",
     "mcp>=1.20.0",
     "pydantic>=2.12.4",
+]
+
+[project.optional-dependencies]
+dev = [
     "pytest>=8.4.2",
     "pytest-asyncio>=1.2.0",
 ]
