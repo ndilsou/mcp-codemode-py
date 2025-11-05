@@ -239,7 +239,7 @@ class MCPCodeMode:
         results = await mcp.search("create issue")
     """
 
-    def __init__(self, stub_dir: str = ".mcp_tools"):
+    def __init__(self, stub_dir: str = ".codemode/stubs"):
         self._servers_cache: dict[str, ServerProxy] = {}
         self._stub_dir = stub_dir
         self._stub_gen_started = False
@@ -338,17 +338,19 @@ class MCPCodeMode:
         """Start background stub generation (non-blocking)."""
         if not self._stub_gen_started:
             import asyncio
-            asyncio.create_task(self.generate_stubs())
-            self._stub_gen_started = True
+            try:
+                # Only start if there's a running event loop
+                loop = asyncio.get_running_loop()
+                loop.create_task(self.generate_stubs())
+                self._stub_gen_started = True
+            except RuntimeError:
+                # No event loop running, skip background generation
+                # Will be generated on-demand when needed
+                pass
 
 
 # Global singleton instance
 mcp = MCPCodeMode()
 
-# Start background stub generation on import (if in a repo)
-# This runs eagerly in the background
-import os
-if os.path.exists(".git") or os.path.exists("pyproject.toml"):
-    # We're likely in a project repo
-    # Start stub generation in background
-    mcp._start_background_stub_gen()
+# Note: Background stub generation happens lazily on first use
+# Not at import time to avoid event loop issues

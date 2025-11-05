@@ -27,11 +27,7 @@ class StubGenerator:
         servers = await runtime.list_servers()
 
         # Create base directory
-        servers_dir = self.output_dir / "servers"
-        servers_dir.mkdir(parents=True, exist_ok=True)
-
-        # Generate root __init__.pyi
-        self._generate_root_init(servers)
+        self.output_dir.mkdir(parents=True, exist_ok=True)
 
         # Generate each server
         for server_name in servers:
@@ -42,7 +38,7 @@ class StubGenerator:
         runtime = await get_runtime()
 
         # Create server directory
-        server_dir = self.output_dir / "servers" / server_name
+        server_dir = self.output_dir / server_name
         server_dir.mkdir(parents=True, exist_ok=True)
 
         # Get all tools for this server
@@ -56,23 +52,6 @@ class StubGenerator:
             schema = await runtime.get_tool_schema(server_name, tool.name)
             self._generate_tool_stub(server_dir, tool.name, schema)
 
-    def _generate_root_init(self, servers: list[str]):
-        """Generate root __init__.pyi file."""
-        lines = [
-            '"""Generated MCP stubs for IDE support."""',
-            "",
-            "from typing import Any",
-            "",
-        ]
-
-        # Import each server
-        for server in servers:
-            lines.append(f"from .servers.{server} import {server}_server as {server}")
-
-        lines.append("")
-
-        content = "\n".join(lines)
-        (self.output_dir / "__init__.pyi").write_text(content)
 
     def _generate_server_init(self, server_dir: Path, tools: list[Any]):
         """Generate server __init__.pyi file."""
