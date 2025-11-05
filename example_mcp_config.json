@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "codemode": {
+      "command": "python",
+      "args": ["-m", "mcp_codemode.server_main"],
+      "transport": "stdio"
+    }
+  }
+}

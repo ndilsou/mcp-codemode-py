@@ -4,6 +4,36 @@
 
 Implements the principles from Anthropic's [Code Execution with MCP](https://www.anthropic.com/engineering/code-execution-with-mcp) and Cloudflare's [Code Mode](https://blog.cloudflare.com/code-mode/) articles.
 
+## Dual Usage: Library + MCP Server
+
+mcp-codemode can be used in **two ways**:
+
+### 1. As a Python Library
+Direct integration in your Python applications:
+```python
+from mcp_codemode import mcp
+result = await mcp.filesystem.read_file(path="/etc/hosts")
+```
+
+### 2. As an MCP Server (Meta-MCP Pattern)
+Configure codemode itself as an MCP server that provides efficient access to your entire MCP catalog:
+
+```json
+{
+  "mcpServers": {
+    "codemode": {
+      "command": "python",
+      "args": ["-m", "mcp_codemode.server_main"],
+      "transport": "stdio"
+    }
+  }
+}
+```
+
+Then use tools like `search_tools`, `execute_code`, etc. to interact with all your configured servers through a minimal interface!
+
+See [MCP_SERVER_USAGE.md](./MCP_SERVER_USAGE.md) for complete details.
+
 ## The Problem
 
 Traditional MCP usage loads all tool definitions into LLM context:
@@ -285,7 +315,39 @@ Implemented:
 - CLI tool
 - Official MCP SDK integration
 - Configuration management
-- Comprehensive tests
+- Comprehensive tests (30 tests passing)
+- **MCP server mode** with 6 tools for meta-MCP pattern
+
+## MCP Server Mode
+
+When used as an MCP server, codemode exposes 6 tools that provide access to your entire MCP catalog:
+
+1. **search_tools** - Search across all servers for relevant tools
+2. **list_servers** - List configured MCP servers
+3. **list_tools** - List tools on a specific server
+4. **get_tool_schema** - Get full schema for a tool
+5. **execute_code** - Execute Python code with access to all servers (most efficient!)
+6. **call_tool** - Direct tool call
+
+### Why Use as MCP Server?
+
+- **Massive context reduction**: 6 tools in context vs 100+ from individual servers
+- **execute_code tool**: Write code that uses multiple servers in one call
+- **Progressive disclosure**: Discover and use tools on-demand
+- **Unified interface**: One configuration point for all MCP servers
+
+Example with execute_code:
+```python
+# One tool call that uses multiple servers!
+{
+  "tool": "execute_code",
+  "arguments": {
+    "code": "files = await mcp.filesystem.list_directory(path='.')\nlarge = [f for f in files if f['size'] > 1_000_000]\nissue = await mcp.github.create_issue(repo='user/repo', title=f'{len(large)} large files')\nreturn {'issue': issue['number']}"
+  }
+}
+```
+
+See [MCP_SERVER_USAGE.md](./MCP_SERVER_USAGE.md) for full documentation.
 
 ## Articles
 

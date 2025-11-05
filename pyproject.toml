@@ -18,6 +18,7 @@ dev = [
 
 [project.scripts]
 mcp-codemode = "mcp_codemode.cli:main"
+mcp-codemode-server = "mcp_codemode.server_main:main"
 
 [build-system]
 requires = ["hatchling"]
