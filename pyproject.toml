@@ -1,7 +1,21 @@
 [project]
 name = "mcp-codemode-py"
 version = "0.1.0"
-description = "Add your description here"
+description = "Lightweight library for calling MCP tools with minimal context overhead"
 readme = "README.md"
 requires-python = ">=3.13"
-dependencies = []
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp>=1.20.0",
+    "pydantic>=2.12.4",
+]
+
+[project.scripts]
+mcp-codemode = "mcp_codemode.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_codemode"]
